@@ -1,6 +1,12 @@
-from QuantFin.Portfolio import PortfolioDecile
-from QuantFin.proxy import Lottery
-from QuantFin.Regression import PanelRes
-from QuantFin.ReqData import KenFrenchLib
-from QuantFin.ReqData import KenFrench
-from QuantFin.tool import CumulativeRet
+from Portfolio import PortfolioDecile
+from Proxy import Lottery
+from Regression import PanelRes
+from ReqData import KenFrenchLib
+from ReqData import KenFrench
+from tool import CumulativeReturn
+
+Portoflio = PortfolioDecile()
+Lottery = Lottery()
+PanelRes = PanelRes()
+KenFrenchLib = KenFrenchLib()
+CumulativeReturn = CumulativeReturn()
