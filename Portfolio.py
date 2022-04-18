@@ -1,8 +1,12 @@
 # -*- coding: utf-8 -*-
-from pandas import qcut, DataFrame
-from numpy import nan, log, exp
+from pandas import qcut, DataFrame, DatetimeIndex, concat
+from numpy import ones
+import statsmodels.api as sm
+from ReqData import KenFrench 
+from HandleError import *
 
-class PortfolioDecile:
+class Deciles:
+
     def method_qcut(self, 
                     df: DataFrame, 
                     on: str,
@@ -51,10 +55,9 @@ class PortfolioDecile:
         elif x >= edges[-1]:
             return decile
         else:
-            for i, edge in enumerate(edges):
-                if i > 0:
-                    if edges[i-1] <= x < edge:
-                        return i+1
+            for i, edge in enumerate(edges[1:]):
+                if edges[i-1] <= x < edge:
+                    return i+1
 
     def _assign_port_num(self, df, on, decile, label, ranking):
         try:
@@ -117,31 +120,97 @@ class PortfolioDecile:
         _d = _d[[entity, jdate, label]]
         df = df.merge(_d, on=[entity, jdate], how='left')
         return df
-    
 
-class CumuRet:
-    def __init__(self, df, pre, post):
-        self.df = df.fillna(0) + 1
-        self.pre = pre
-        self.post = post
+class Performance:
     
-    def geometric(self):
-        cr = self.df
-        window = abs(self.post-self.pre) + 1
-        for i in range(1, window):
-            cr = cr * self.df.shift(i)
-        cr = cr.shift(-self.post)
-        cr = cr - 1
-        cr = cr.replace(0, nan)
-        return cr
+    def __init__(self, df: DataFrame, freq: str = 'M', model: str = 'FF3', 
+                datename: str = 'date'):
+        """
+        Parameters
+        ----------
+        df: DataFrame
+            A DataFrame of portfolios returns with columns of portfolio 
+            names and an index of datetime.
+
+        freq: str
+            The frequency of returns. Optional frequencies are monthly(M),
+            daily(D) and yearly(Y). Default is 'M'.
+
+        model: str
+            Indicates the asset pricing models for estimating the alpha. 
+            It will regress portfolios returns on factors. Optional models 
+            are None (for not estimating alpha), Fama-French-3 factor (FF3), 
+            Fama-French-5 factor (FF5), and FF3 + MOM (FF4). Default is FF3.
+        
+        datename: str
+            Indicates the name of datetime index. Default is 'date'
+
+        """
+        if type(df.index) is DatetimeIndex:
+            self.df = df
+            self.freq = freq
+            self.model = model
+            self.datename = datename
+        else:
+            raise InputError("The datatype of input dataset's index is not the DatetimeIndex")
+
+    def _get_factor_data(self):
+        f = KenFrench(self.model, self.freq).get_data()
+        f = f.reset_index()
+        f.columns = f.columns.str.lower()
+        f = f.set_index(self.datename)
+        return f
+
+    def _ols_const(self, y, x, **args):
+        mod = sm.OLS(y, x).fit(**args)
+        return mod.params.const, mod.tvalues.const, mod.pvalues.const
     
-    def rolling_log_sum(self):
-        window = abs(self.post-self.pre) + 1
-        cr = log(self.df)
-        cr = cr.rolling(window=window, min_periods=window).sum()
-        cr = (exp(cr)-1).shift(-self.post)
-        cr = cr.replace(0, nan)
-        cr = cr.stack().rename(f'CR_{self.pre}_{self.post}').to_frame()
-        cr[abs(cr[f'CR_{self.pre}_{self.post}'])<0.0000001] = nan
-        cr = cr.loc[:, f'CR_{self.pre}_{self.post}'].unstack()
-        return cr
+    def get_const_tvalue(self, x, percentage, decimal, **args):
+        _tp = self.df.apply(lambda y: self._ols_const(y, x, **args))
+        _m = _tp.iloc[0, :]
+        if percentage:
+            _m = _m*100
+        _m = _m.apply(lambda x: format(x, '.2f'))
+        _t = _tp.iloc[1, :].apply(lambda x: '\n('+format(x, f'.{decimal}f')+')')
+        _pv = _tp.iloc[2, :]
+        _pv = _pv.mask(_pv <= .01, 3)
+        _pv = _pv.mask(_pv <= .05, 2)
+        _pv = _pv.mask(_pv <= .10, 1)
+        _pv = _pv.mask( (_pv > .10) & (_pv < 1), 0)
+        _pv = _pv.apply(lambda x: int(x)*'*')
+        _tp = _m + _pv + _t
+        return _tp
+
+    def summary(self, percentage: bool = True, decimal: int = 2, **args) -> DataFrame:
+        """
+        It reports the summary statistics of portfolios, including mean 
+        return and its t-value, standard factor models'alpha and relative
+        t-value. 
+        
+        Parameters
+        ----------
+        percentage: bool
+        It indicates if returns in the summary table is in percentage, 
+        including alphas. Default is True
+
+        decimal: int
+        It indicates the decimals in this summary table would be kept.
+        Default is 2.
+
+        args:
+        All arguments related to the statsmodel.api.OLS.fit are applied
+        here.
+
+        Returns
+        -------
+        summary: DataFrame
+        """
+        pns = self.df.columns # get all portfolio-label names
+        table_mean = self.get_const_tvalue(ones(len(self.df)), percentage, decimal, **args)
+        if self.model:
+            f = self._get_factor_data()
+            self.df = concat([self.df, f], axis=1, join='inner')
+            table_alpha = self.get_const_tvalue(self.df[pns], percentage, decimal, **args)
+        
+
+        

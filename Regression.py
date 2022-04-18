@@ -1,17 +1,7 @@
 # -*- coding: utf-8 -*-
-import pandas_datareader.data as web
 from linearmodels import FamaMacBeth, PanelOLS
-from linearmodels.panel import compare   
+from linearmodels.panel import compare
 import statsmodels.formula.api as smf
-from pandas.tseries.offsets import BMonthEnd
-from pandas import qcut, DataFrame, Series, merge, concat, to_datetime, read_csv
-from numpy import nan, log, exp
-from datetime import datetime
-from zipfile import ZipFile
-from bs4 import BeautifulSoup as bs
-import requests
-import io
-import os
 
 class OLS:
     def ols_r_squared(self, x, formula):
@@ -103,3 +93,6 @@ class PanelRes:
             return reg
         except Exception as e:
             print(e)
+    
+    def compare(self, dict_):
+        return compare(dict_)

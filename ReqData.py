@@ -167,10 +167,12 @@ class KenFrench:
         else:
             _freq = ''
         
-        if factors == 'MOM':    
+        if factors.lower() == 'mom':    
             self.topic = 'F-F_Momentum_Factor' + _freq
-        elif factors == 'FF3':
+        elif factors.lower() == 'ff3':
             self.topic = 'F-F_Research_Data_Factors' + _freq
+        elif factors.lower() == 'ff5':
+            self.topic = 'F-F_Research_Data_5_Factors_2x3' + _freq
         else:
             self.topic = factors
         self.start_date = start_date
