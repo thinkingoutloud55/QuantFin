@@ -1,11 +1,20 @@
 # -*- coding: utf-8 -*-
 from linearmodels import FamaMacBeth, PanelOLS
 from linearmodels.panel import compare
-import statsmodels.formula.api as smf
+import statsmodels.api as sm
 
 class OLS:
-    def ols_r_squared(self, x, formula):
-        return smf.ols(formula, data=x).fit().rsquared_adj
+
+    def __init__(self, y, x, constant=True, **args):
+        if constant:
+            x = sm.add_constant(x)
+        self.mod = sm.OLS(y, x).fit(**args)
+    
+    def stats(self, param):
+        return self.mod.params[param], self.mod.tvalues[param], self.mod.pvalues[param]
+
+    def r2(self):
+        return self.mode.rsquared_adj
 
 
 class PanelRes:

@@ -8,14 +8,15 @@ class Volatility:
     def hist(self, df: DataFrame, window: int, minw: int) -> DataFrame:
         return df.rolling(window, min_periods=minw).std()
 
+    """
     def ewma(self, df: DataFrame, burnin: int, lambda_: float=0.94):
         df = df**2
         dfbi = df[:burnin]
         dfbi['i'] = reversed(range(burnin)) + 1
         dfbi['lamw'] = lambda_**(dfbi['i']-1)
         squared_sigma = (1 - lambda_)*(dfbi['lamw'].mul(dfbi.loc[:, :'i'], axis=0)) 
-        sigma_0 = (1-lambda_)*
-
+        sigma_0 = (1-lambda_)
+    """
     def garch(self):
         pass
 
