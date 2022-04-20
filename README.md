@@ -26,7 +26,8 @@ Show performance summary of a portfolio, including mean returns and alphas(FF3):
 
 ```python
 from Quantfin import Portformance
-
-rets = pd.read_pickle('rets.pkl') # Assume rets is a dataframe of your portfolio monthly returns with column names of portfolio labels and an index of datetime (if model is specified).
+# Assume rets is a dataframe of your portfolio monthly returns with 
+# column names of portfolio labels and an index of datetime (if model is specified).
+rets = pd.read_pickle('rets.pkl') 
 print(Portformance(rets, model='FF5').summary())
 ```
