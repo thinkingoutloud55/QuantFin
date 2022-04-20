@@ -14,7 +14,7 @@ class OLS:
         return self.mod.params[param], self.mod.tvalues[param], self.mod.pvalues[param]
 
     def r2(self):
-        return self.mode.rsquared_adj
+        return self.mod.rsquared_adj
 
 
 class PanelRes:
@@ -93,9 +93,9 @@ class PanelRes:
         try:
             formula = self.formula
             if time_effects:
-                formula += '+ TimeEffects'
+                formula += ' + TimeEffects'
             if entity_effect:
-                formula += '+ EntityEffects'
+                formula += ' + EntityEffects'
             mod = PanelOLS.from_formula(formula, self.df)
             reg = mod.fit(cov_type=cov_type, cluster_entity=cluster_entity, 
                           other_effects=other_effects)
