@@ -2,11 +2,6 @@
 A library for research on asset pricing.
 Working........
 
-### Installation
-```
-pip install QuantFin
-```
-
 ### Get started
 Assign the universe equities to deciles:
 
