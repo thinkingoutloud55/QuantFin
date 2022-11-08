@@ -17,7 +17,7 @@ crsp = pd.read_pickle('crsp.pkl')
 crsp = Deciles().method_ranking(crsp, on='me_comp')
 ```
 
-Show performance summary of a portfolio, including mean returns and alphas(FF3):
+Show summary of portfolios, including mean returns and alphas(FF3):
 
 ```python
 from Quantfin import Portformance
