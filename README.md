@@ -14,7 +14,7 @@ import pandas as pd
 crsp = pd.read_pickle('crsp.pkl') 
 
 # Assign stocks to 10 deciles based on me_comp, the market cap of a company.
-crsp = port().method_ranking(crsp, on='me_comp')
+crsp = Deciles().method_ranking(crsp, on='me_comp')
 ```
 
 Show performance summary of a portfolio, including mean returns and alphas(FF3):
